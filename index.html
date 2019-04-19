@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#2196f3">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap:">
+  <title>Framework7 Feeds</title>
+  <link rel="stylesheet" href="dist/css/framework7.min.css">
+  <link rel="stylesheet" href="dist/css/framework7.feeds.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="color-theme-red">
+  <div id="app">
+    <div class="statusbar"></div>
+    <div class="view view-main view-init ">
+      <div data-page="index" class="page">
+        <div class="navbar">
+          <div class="navbar-inner sliding">
+            <div class="title">Framework7 Feeds</div>
+          </div>
+        </div>
+        <!-- FAB Right Bottom (Orange) -->
+        <div class="fab fab-right-bottom"><a href="#"><i class="icon material-icons">add</i></a>
+        </div>       
+        <div class="page-content">
+          <div class="block-title">Framework7 Feeds Parser Plugin</div>
+          <div class="block block-strong">
+            <p>Framework7 Feeds plugin brings easy RSS feeds integration into Framework7 app.</p>
+            <p>Plugin comes with easy and powerful JS API to integrate and customize RSS feeds. But in most cases you will not need to use JavaScript at all, like in the following examples:</p>
+          </div>
+          <div class="block-title">News Feeds</div>
+          <div class="list">
+            <ul class="rss-list">
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="dist/js/store.min.js"></script>
+  <script src="dist/js/framework7.min.js"></script>
+  <script src="dist/js/framework7.feeds.min.js"></script>
+  <script>
+    function check() {
+      var inp = document.querySelector('#url')
+      console.log(inp.value)
+      var expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+      var regex = new RegExp(expression);
+      var t = inp.value
+
+      if (t.match(regex)) {
+        document.querySelector('.send-cl').style.display='block'
+        return true
+      }//if (t.match(regex))
+      else {
+        document.querySelector('.send-cl').style.display='none'
+        return false
+      }//else if (t.match(regex))
+    }//function check(in) 
+    function save() {
+      if(check()) {
+        var rss = store.get('rss')
+        rss.push(
+          {
+            id:rss.length+1,
+            url:app.methods.getproxy()+document.querySelector('#url').value,
+            name:document.querySelector('#Name').value
+          }
+        )//rss.push(
+        store.set('rss',rss)
+        loadRssList()
+        document.querySelector('.popup-close').click()
+      }//if(check()) 
+      else {
+        app.dialog.alert('URL is incorrect!','Error')
+      }//else if(check()) 
+    }//function save() 
+    var $ = Dom7
+    Framework7.use(Framework7Feeds);
+    var app = new Framework7({      
+      id:'ru.framework7.rssfeeds',
+      name:'Framework7 Feeds App',
+      root: '#app',      
+      externalLinks: 'a.external, .feeds-page .block a',
+      feeds: {
+        enabled: true,
+      },
+      methods:{
+        getproxy: function() {
+          return 'https://cors.io/?'
+        }
+      },
+      routes: [
+        {
+          path: '/index/',
+          url: './index.html',
+        },
+        {
+          path: '/rss/:index/',
+          url: './pages/rss.html',
+        },
+      ]
+    })//var app = new Framework7(
+    function loadRssList() {
+      $('.rss-list').html('')
+      var rss = store.get('rss')
+      if(rss === undefined || rss === '' || rss === null) {
+        rss = [
+          {
+            id:1,
+            url:app.methods.getproxy()+'https://developer.apple.com/news/rss/news.rss',
+            name:'Apple News'
+          }
+        ]
+        store.set('rss',rss)
+      }//if(rss === undefined || rss === '' || rss === null)
+      for(var x = 0; x < rss.length; x++) {
+        var link = ''
+        link+='        <li>'
+        link+='          <a href="/rss/'+rss[x].id+'/" class="item-content item-link">'
+        link+='            <div class="item-inner">'
+        link+='              <div class="item-title">'+rss[x].name+'</div>'
+        link+='           </div>'
+        link+='          </a>'
+        link+='        </li>'
+        $('.rss-list').append(link)
+      }//for(var x = 0; x < rss.length; x++)
+    }//function loadRssList() 
+    function main() {
+      loadRssList()
+      var dynamicPopup = app.popup.create({
+        content: '<div class="popup">'+
+                    '<div class="block">'+
+                      '<p align="right"><a href="#" class="link popup-close">Close</a></p>'+
+                        '<div class="list inline-labels no-hairlines-md">'+
+                        '  <ul>'+
+                        '    <li class="item-content item-input">'+
+                        '      <div class="item-inner">'+
+                        '        <div class="item-input-wrap">'+
+                        '          <input type="text" id="Name" placeholder="Name" >'+
+                        '          <span class="input-clear-button"></span>'+
+                        '        </div>'+
+                        '      </div>'+
+                        '    </li>      '+
+                        '    <li class="item-content item-input">'+
+                        '      <div class="item-inner">'+
+                        '        <div class="item-input-wrap">'+
+                        '          <input type="url" id="url" placeholder="Type URL" oninput="check(this);return false;">'+
+                        '          <span class="input-clear-button"></span>'+
+                        '        </div>'+
+                        '      </div>'+
+                        '    </li>      '+
+                        '    <li class="item-content item-input send-cl" style="display:none;margin-top: 8px;">'+
+                        '     <button class="button button-fill" onclick="save(); return false;">Save</button>'+
+                        '    </li>      '+
+                        '  </ul>'+
+                        '</div>'+                
+                    '</div>'+
+                  '</div>',
+      })   
+      $('.fab-right-bottom').on('click',function() {
+        dynamicPopup.open()
+      })
+    }//function main()
+    main()
+
+    $(document).on('page:init', '.page[data-page="index"]', function (e) {
+      main()
+    })//$(document).on('page:init', '.page[data-page="rss"]', function (e) 
+    $(document).on('page:init', '.page[data-page="rss"]', function (e) {
+        var id = parseInt(e.detail.router.url.replace(/\//g,'').replace(/rss/g,''))
+        store.set('currId',id)
+        var rss = store.get('rss')
+        for(var x = 0; x < rss.length; x++) {
+          if(rss[x].id == id) {
+            var feed = app.feeds.create({
+              el: '.feeds',
+              feedUrl: rss[x].url,
+              virtualList: false,
+              renderList:function(data) {
+                var str = ''
+                for(var x = 0; x < data.items.length; x ++) {
+                  var desc = data.items[x].description
+                  if(desc.length > 250) {
+                    desc = desc.substr(0,250)+'...'
+                  }//if(desc.length > 250) 
+                  str+='<a href="#" style="color:black;" class="item-link item-content feeds-item-link" data-index="'+x+'">'
+                  str+='<div class="card">'
+                  str+='  <div class="card-header">'+ data.items[x].title+'</div>'
+                  str+='  <div class="card-content card-content-padding">'+ desc +'</div>'
+                  str+='  <div class="card-footer">'+ data.items[x].formattedDate+'</div>'
+                  str+='</div>                 '
+                }
+                return str
+              },
+              openIn: 'page',
+            });
+            $('.rss-title').html(rss[x].name)
+            
+          }//if(rss[x].id == id)
+        }//for(var x = 0; x < rss.length; x++)
+
+        $('.delete-rss').on('click',function() {
+          if(store.get('currId') == 1) {
+            app.dialog.alert('Deleting Apple RSS example has been disabled','Alert')
+          } else 
+          app.dialog.confirm('Are you sure?','Delete',function() {
+            var rss1 = store.get('rss')
+            var rss2 = []
+            for(var x = 0; x < rss1.length; x++) {
+              if(rss1[x].id !=  store.get('currId')) {
+                rss2.push(rss1[x])
+              }
+            }//for(var x = 0; x < rss1.length; x++) 
+            store.set('rss',rss2)
+            loadRssList()
+            $('.icon-back').click()
+          },function() {
+            $('.icon-back').click()
+          })//app.dialog.confirm('','',function() 
+        })//$('.delete-rss').on('click',function() 
+    })//$(document).on('page:init', '.page[data-page="rss"]', function (e) 
+
+  </script>
+</body>
+</html>
